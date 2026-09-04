@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Knowrium</title>
+<style>
+header nav{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:6px}
+header nav input#searchInput{order:0;margin-left:8px;width:260px}
+body{font-family:'Segoe UI',sans-serif;margin:20px;background:#f5f5f5;color:#333}
+header{text-align:left;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
+header h1{font-size:2.0em;font-weight:700;font-family:'Poppins','Segoe UI',sans-serif;color:#1a1a1a;margin:0;flex:0 0 auto}
+nav{margin-top:10px}
+input,textarea,button,select{font-family:inherit}
+textarea{width:100%;height:200px;border-radius:8px;border:1px solid #ccc;padding:6px;background:#fafafa}
+.page{background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.08);margin-top:15px;transition:all .2s ease-in-out}
+.page:hover{box-shadow:0 6px 16px rgba(0,0,0,.12)}
+.btn{background:#6c6c6c;color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;margin-right:5px;transition:background .2s}
+.btn:hover{background:#505050}
+.link{color:#0b63b5;cursor:pointer;text-decoration:underline}
+#saveNotice{color:green;font-weight:700;margin-top:10px;display:none}
+#deleteSelect,#deleteSearch{width:100%;padding:8px;margin-top:10px;border-radius:6px;border:1px solid #ccc;background:#fafafa}
+.genre-btn{margin:6px;background:#e0e0e0;border:none;padding:10px 16px;border-radius:10px;cursor:pointer}
+.genre-btn:hover{background:#cfcfcf}
+.small{color:#666;font-size:.9rem}
+input[type="text"],select{border:1px solid #ccc;border-radius:6px;padding:6px;background:#fafafa}
+.home-page-list{display:flex;flex-direction:column;gap:12px}
+.home-page-item{background:#fff;border-radius:12px;padding:12px 16px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.home-page-item:hover{box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.home-page-item .link{font-weight:600;color:#0b63b5;text-decoration:underline}
+.home-page-item .small{color:#666;font-size:.9rem;display:block;margin-top:4px}
+.page>label{display:flex;justify-content:flex-end;margin-bottom:12px}
+.page label[for="imageInput"]{display:block;text-align:left;margin-bottom:4px;font-weight:700}
+#imagePreview{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-start}
+#imagePreview .img-wrap{position:relative;display:inline-block}
+#imagePreview img{max-width:120px;display:block;border-radius:6px}
+.image-section img.article-image{max-width:100%;border-radius:8px;margin-top:10px}
+/* 新しく追加：JPEG / WEBP 表示スペースのスタイル */
+.image-collections{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.image-collections .section{background:#fafafa;padding:12px;border-radius:8px;border:1px solid #e6e6e6}
+.image-collections .section h3{margin:0 0 8px 0;font-size:1rem}
+.image-collections .thumbs{display:flex;flex-wrap:wrap;gap:10px}
+.image-collections .thumbs img{max-width:140px;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+</style>
+
+  <!-- PWA Essential Settings (Auto-generated) -->
+  <link rel="manifest" href="manifest.json">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js');
+      });
+    }
+  </script>
+
+  <!-- PWA Essential Settings (Auto-generated) -->
+  <link rel="manifest" href="manifest.json">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js');
+      });
+    }
+  </script>
+</head>
+<body>
+  <header>
+    <h1>Knowrium</h1>
+    <nav>
+      <button class="btn" onclick="showHome()">🏠 ホーム</button>
+      <button class="btn" onclick="newPage()">📝 新規作成</button>
+      <button class="btn" onclick="backupData()">📦 バックアップ</button>
+      <button class="btn" onclick="restoreData()">📂 復元</button>
+      <button class="btn" onclick="showDeletePageMenu()">🗑️ ページ削除</button>
+      <input id="searchInput" placeholder="検索...（タイトルまたはタグを入力）" oninput="searchPages()" style="padding:6px; margin-left:8px; width:260px;">
+    </nav>
+  </header>
+
+  <main id="content"></main>
+  <p id="saveNotice">✅ 保存完了</p>
+
+  <script>
+    // load pages from localStorage
+    let pages = JSON.parse(localStorage.getItem('knowriumPages') || '{}');
+
+    const genres = ['🧐学問・勉強','🏡暮らし・生活','✈️世界・旅行','❤️恋愛','🖥️ビジネス','💃娯楽','🏈スポーツ','🌱豆知識'];
+    genres.push('サイト概要');
+
+    function showSaveNotice(){const n=document.getElementById('saveNotice'); n.style.display='block'; setTimeout(()=>n.style.display='none',2000)}
+    function savePages(){localStorage.setItem('knowriumPages',JSON.stringify(pages)); showSaveNotice()}
+
+    function showHome(){
+      const content=document.getElementById('content');
+      let html=`<div class="page"><h2>📚 Knowrium ホーム</h2>`;
+      html+= '<label>表示順: <select id="sortSelect" onchange="renderHomeSorted()"><option value="newest">新着順</option><option value="oldest">古い順</option><option value="kana">カナ順</option></select></label><br><br>';
+      genres.forEach(g=>{html+=`<button class='genre-btn' onclick="showGenre('${escapeQuotes(g)}')">${escapeHtml(g)}</button>`});
+      html+=`<hr class='small'><div class='small'>全ページ数: ${Object.keys(pages).length}</div></div>`;
+      content.innerHTML=html;
+      renderHomeSorted();
+    }
+
+    function renderHomeSorted(){
+      const sort=document.getElementById('sortSelect')?.value||'newest';
+      const content=document.getElementById('content');
+      let pageList=Object.keys(pages).map(title=>({title,data:pages[title]}));
+      if(sort==='newest') pageList.sort((a,b)=>new Date(b.data.created)-new Date(a.data.created));
+      else if(sort==='oldest') pageList.sort((a,b)=>new Date(a.data.created)-new Date(b.data.created));
+      else if(sort==='updated') pageList.sort((a,b)=>new Date(b.data.created)-new Date(a.data.created));
+      else if(sort==='kana') {
+  pageList.sort((a,b) => a.title.localeCompare(b.title, 'ja'));
+}
+
+      let listHtml='<ul class="home-page-list">';
+      pageList.forEach(p=>{
+        const preview=p.data.body? (p.data.body.length>200? p.data.body.slice(0,200)+'...' : p.data.body) : '';
+        listHtml+=`<li class='home-page-item'><span class='link' onclick="viewPage('${escapeQuotes(p.title)}')">${escapeHtml(p.title)}</span> <span class='small'>${escapeHtml(preview)}</span></li>`;
+      });
+      listHtml+='</ul>';
+      const pageDiv=content.querySelector('.page');
+      if(pageDiv){const oldList=pageDiv.querySelector('.home-page-list'); if(oldList) oldList.remove(); pageDiv.appendChild(document.createRange().createContextualFragment(listHtml))}
+    }
+
+    function showGenre(genre){ 
+      const content=document.getElementById('content');
+      let html=`<div class='page'><h2>📖 ${escapeHtml(genre)}</h2>`
+ 
+      if(genre==='サイト概要'){
+        const siteDescription=`<div class="page"><h2>📄 サイト概要</h2>
+<p><strong>Knowrium</strong>は、情報を整理し、学びや生活、旅行、趣味、ビジネス、スポーツなどの知識や経験を蓄積することを目的としたプラットフォームです。ユーザーは自由に記事を作成でき、タイトル、タグ、ジャンル、作成者、作成日時を設定して情報を整理・共有できます。</p>
+<p>記事はテキストだけでなく画像も挿入可能で、ドラッグ＆ドロップで画像の順序を変更したり、不要な画像を削除することができます。文字装飾（太字・斜体・下線）や文字色の変更もサポートし、情報を視覚的に整理できます。</p>
+<p>検索はタイトル・タグ・ジャンルを対象とし、本文は検索対象外です。ホームでは新着順・古い順・最近更新順の切り替えが可能で、必要な情報を効率よく探せます。</p>
+<p>バックアップと復元機能により、データの保存と復元が容易です。Knowriumは「知識の民主化」と「情報の効率的整理」を目指し、個人の知識管理とコミュニティでの情報共有の両方を支援します。</p>
+<p>将来的には、ユーザー間で記事や旅行プラン、学習ノートを共有し合うことで、新しい発見やアイデアの創出につながることを目指します。</p></div>`;
+        html+=siteDescription;
+      } else {
+        const items=Object.keys(pages).filter(title=> (pages[title].genre||'')===genre);
+        if(items.length===0) html+=`<p class='small'>このジャンルのページはまだありません。</p>`;
+       
+        else{ html+='<ul>'+items.map(t=>{const page=pages[t]; const preview=page.body? (page.body.length>230? page.body.slice(0,230)+'...' : page.body):''; return `<li class='home-page-item'><span class='link' onclick="viewPage('${escapeQuotes(t)}')">${escapeHtml(t)}</span> <span class='small'>${escapeHtml(preview)}</span></li>`}).join('')+'</ul>' }
+      }
+      html+=`<br><button class="btn" onclick="showHome()"> 戻る</button></div>`;
+      content.innerHTML=html;
+    }
+
+    function newPage(){
+      const content=document.getElementById('content');
+      let genreOptions=genres.map(g=>`<option value='${escapeAttr(g)}'>${escapeHtml(g)}</option>`).join('');
+      content.innerHTML=`<div class='page'>
+      <h2>📝 新しいページを作成</h2>
+      <input id='titleInput' placeholder='タイトル' style='width:100%;padding:6px;'><br><br>
+      <input id='authorInput' placeholder='作成者名' style='width:100%;padding:6px;margin-bottom:8px;'><br><br>
+      <select id='genreSelect' style='width:100%;padding:6px;'>${genreOptions}</select><br><br>
+      <input id='tagInput' placeholder='タグ（カンマ区切り）' style='width:100%;padding:6px;'><br><br>
+
+      <!-- サムネイル入力を追加 -->
+      <label></label>サムネイル画像(JPEG / WEBP)<br>
+      <input type='file' id='thumbnailInput' accept='image/jpeg,image/webp' style='display:block;margin-bottom:8px;' multiple><br>
+      <div id='thumbnailPreview' style='margin-bottom:10px;'><p style='font-size:small;color:#666;'>※選択した画像がここに表示されます。</p></div>
+
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;"><input type='color' id='textColorPicker' title='文字色を選択'></div>
+      <!-- 文字サイズ選択（newPage() / editPage() 内） -->
+<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+  <label>文字サイズ:</label>
+  <select id="fontSizeSelect">
+    <option value="12px">12px</option>
+    <option value="14px" selected>14px</option>
+    <option value="20px">20px</option>
+    <option value="28px">28px</option>
+    <option value="36px">36px</option>
+    <option value="44px">44px</option>
+  </select>
+</div>
+
+      <div style="display:flex;gap:6px;margin-bottom:6px;"><button class='btn' type='button' onclick="document.execCommand('bold')">B</button><button class='btn' type='button' onclick="document.execCommand('italic')">I</button><button class='btn' type='button' onclick="document.execCommand('underline')">U</button></div>
+      <div id='bodyInput' contenteditable='true' style='width:100%;min-height:200px;border:1px solid #ccc;border-radius:8px;padding:6px;background:#fafafa;overflow:auto;margin-bottom:10px;' placeholder="ここに本文を入力"></div>
+      <label for='imageInput'>画像挿入：</label><input type='file' id='imageInput' accept='image/*' style='display:block;margin-bottom:10px;' multiple>
+      <div id='imagePreview' style='display:flex;flex-wrap:wrap;gap:10px;'></div>
+      <button class='btn' onclick='savePage()'>💾 保存</button>
+      </div>`;
+// フォントサイズ変更
+const fontSizeSelect = document.getElementById('fontSizeSelect');
+fontSizeSelect.addEventListener('change', () => {
+  document.execCommand('fontSize', false, "7"); // 一旦最大サイズで挿入
+  const spans = document.querySelectorAll('#bodyInput span[style*="font-size"]');
+  spans.forEach(span => span.style.fontSize = fontSizeSelect.value);
+});
+
+      const bodyInput=document.getElementById('bodyInput');
+      const colorPicker=document.getElementById('textColorPicker');
+      const imageInput=document.getElementById('imageInput');
+      const imagePreview=document.getElementById('imagePreview');
+      const thumbnailInput=document.getElementById('thumbnailInput');
+      const thumbnailPreview=document.getElementById('thumbnailPreview');
+
+      // 文字色変更
+      colorPicker.addEventListener('input',()=>{document.execCommand('foreColor',false,colorPicker.value)});
+　　　　
+      // サムネイル読み込み
+      thumbnailInput.addEventListener('change', e=>{
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          const img = document.createElement('img'); img.src = ev.target.result; img.style.maxWidth='450px'; img.style.display='block';
+          thumbnailPreview.innerHTML=''; thumbnailPreview.appendChild(img);
+          window.currentThumbnail = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      // 画像挿入機能
+      imageInput.addEventListener('change',e=>{
+        const files=Array.from(e.target.files);
+        files.forEach(file=>{
+          const reader=new FileReader();
+          reader.onload=function(evt){
+            const wrapper=document.createElement('div');wrapper.className='img-wrap';wrapper.style.position='relative';wrapper.style.display='inline-block';
+            const img=document.createElement('img');img.src=evt.target.result;img.style.maxWidth='120px';img.style.cursor='grab';img.setAttribute('draggable',true);
+            const removeBtn=document.createElement('button');removeBtn.textContent='×';removeBtn.style.position='absolute';removeBtn.style.top='2px';removeBtn.style.right='2px';removeBtn.style.background='red';removeBtn.style.color='white';removeBtn.style.border='none';removeBtn.style.borderRadius='50%';removeBtn.style.width='20px';removeBtn.style.height='20px';removeBtn.style.cursor='pointer';removeBtn.addEventListener('click',()=>wrapper.remove());
+            wrapper.appendChild(img);wrapper.appendChild(removeBtn);imagePreview.appendChild(wrapper);
+            img.addEventListener('dragstart',dragStart);img.addEventListener('dragend',dragEnd);
+          };
+          reader.readAsDataURL(file);
+        });
+        e.target.value='';
+      });
+
+      let dragElem=null; function dragStart(e){dragElem=e.target; e.dataTransfer.setData('text/plain','')} function dragEnd(){dragElem=null}
+      imagePreview.addEventListener('dragover',e=>e.preventDefault());
+      imagePreview.addEventListener('drop',e=>{e.preventDefault(); if(dragElem){const target=document.elementFromPoint(e.clientX,e.clientY); if(target && target.parentNode===imagePreview) imagePreview.insertBefore(dragElem,target.nextSibling); else imagePreview.appendChild(dragElem)}});
+
+    }
+
+    function savePage(){
+      const titleEl=document.getElementById('titleInput'); const bodyEl=document.getElementById('bodyInput'); const tagEl=document.getElementById('tagInput'); const genreEl=document.getElementById('genreSelect');
+      if(!titleEl) return alert('タイトル欄が見つかりません'); const title=titleEl.value.trim(); if(!title){alert('タイトルを入力してください。'); return}
+      const bodyHtml=bodyEl.innerHTML; const tempDiv=document.createElement('div'); tempDiv.innerHTML=bodyHtml;
+      let textParts=[]; let images=[]; Array.from(tempDiv.childNodes).forEach(node=>{ if(node.tagName==='IMG') images.push(node.src); else textParts.push(node.outerHTML||node.textContent)});
+      const authorEl=document.getElementById('authorInput');
+      pages[title]={body:textParts.join(''),images:images,tags:tagEl?.value.trim()||'',genre:genreEl?.value||'',author:authorEl?.value.trim()||'不明',created:new Date().toLocaleString(),thumbnail:window.currentThumbnail||''};
+      // reset currentThumbnail after saving to avoid accidental reuse
+      window.currentThumbnail = null;
+      savePages(); viewPage(title);
+    }
+
+    function viewPage(title){
+      const page=pages[title]; if(!page) return alert('ページが見つかりません'); const content=document.getElementById('content'); const bodyHtml=page.body||'';
+
+      // build html safely into a variable
+      let html = `<div class='page'>`;
+      // render thumbnail at top if available
+      if(page.thumbnail){ html += `<div style="text-align:center;margin-bottom:15px;"><img src="${page.thumbnail}" style="max-width:100%;border-radius:10px;"></div>`; }
+
+      // JPEG と WEBP を分けて表示する (サムネイル表示)
+      const jpegImgs=(page.images||[]).filter(src=>/data:image\/(jpeg|jpg)|\.jpe?g$/i.test(src));
+      const webpImgs=(page.images||[]).filter(src=>/data:image\/webp|\.webp$/i.test(src));
+      let imagesSection = '';
+      if(jpegImgs.length>0 || webpImgs.length>0){
+        imagesSection += `<div class="image-collections">`;
+        if(jpegImgs.length>0){
+          imagesSection += `<div class="section"><h3>JPEG 形式の画像</h3><div class="thumbs">${jpegImgs.map(s=>`<img src="${s}" alt="jpeg" class="article-image" />`).join('')}</div></div>`;
+        }
+        if(webpImgs.length>0){
+          imagesSection += `<div class="section"><h3>WEBP 形式の画像</h3><div class="thumbs">${webpImgs.map(s=>`<img src="${s}" alt="webp" class="article-image" />`).join('')}</div></div>`;
+        }
+        imagesSection += `</div>`;
+      }
+
+      html += `<h2>${escapeHtml(title)}</h2>`;
+      html += `<p><b>ジャンル：</b>${escapeHtml(page.genre||'未分類')}</p><p><b>作成日時：</b>${escapeHtml(page.created||'不明')}</p>`;
+      if(page.tags) html += `<p><b>タグ：</b>${escapeHtml(page.tags)}</p>`;
+      html += `<p><b>作成者：</b>${escapeHtml(page.author||'不明')}</p>`;
+      html += `<div>${bodyHtml}</div>`;
+      html += imagesSection;
+      html += `<br><button class='btn' onclick="editPage('${escapeQuotes(title)}')">✏️ 編集</button><button class='btn' onclick="downloadPage('${escapeQuotes(title)}')">💾 このページを保存</button><button class='btn' onclick="showHome()">🏠 ホーム</button></div>`;
+
+      content.innerHTML = html;
+    }
+
+    function editPage(title){
+      const page=pages[title]; if(!page) return alert('編集対象のページがありません'); const content=document.getElementById('content'); let genreOptions=genres.map(g=>`<option value='${escapeAttr(g)}' ${page.genre===g?'selected':''}>${escapeHtml(g)}</option>`).join('');
+      content.innerHTML=`<div class='page'><h2>✏️ ${escapeHtml(title)} を編集</h2><label>タイトル（変更可）</label><input id='editTitle' value='${escapeAttr(title)}' style='width:100%;padding:6px;'><br><br><label>作成者</label><input id='editAuthor' value='${escapeAttr(page.author||'')}' style='width:100%;padding:6px; margin-bottom:8px;'><br><br><select id='genreSelect' style='width:100%;padding:6px;'>${genreOptions}</select><br><br><input id='tagInput' value='${escapeAttr(page.tags||'')}' style='width:100%;padding:6px;'><br><br><div id='editBody' contenteditable='true' style='width:100%;min-height:200px;border:1px solid #ccc;border-radius:8px;padding:6px;background:#fafafa;overflow:auto;margin-bottom:10px;'>${page.body||''}</div>
+     <!-- 文字サイズ選択（newPage() / editPage() 内） -->
+<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+  <label>文字サイズ:</label>
+  <select id="fontSizeSelect">
+    <option value="12px">12px</option>
+    <option value="14px" selected>14px</option>
+    <option value="20px">20px</option>
+    <option value="28px">28px</option>
+    <option value="36px">36px</option>
+    <option value="44px">44px</option>
+  </select>
+</div>
+
+      <label></label>サムネイル画像（JPEG / WEBP）:<br>
+      <input type='file' id='thumbnailInput' accept='image/jpeg,image/webp' style='display:block;margin-bottom:8px;' multiple><br>
+      <div id='thumbnailPreview' style='margin-bottom:10px;'></div>
+      <label for='imageInput'>画像挿入（追加も可）：</label><input type='file' id='imageInput' accept='image/*' style='display:block;margin-bottom:10px;'>
+      <div id='imagePreview' style='display:flex;flex-wrap:wrap;gap:10px;'></div><br><button class='btn' onclick="updatePage('${escapeQuotes(title)}')">💾 更新</button><button class='btn' onclick="viewPage('${escapeQuotes(title)}')">キャンセル</button></div>`;
+
+      // フォントサイズ変更
+const fontSizeSelect = document.getElementById('fontSizeSelect');
+fontSizeSelect.addEventListener('change', () => {
+  document.execCommand('fontSize', false, "7"); // 一旦最大サイズで挿入
+  const spans = document.querySelectorAll('#bodyInput span[style*="font-size"]');
+  spans.forEach(span => span.style.fontSize = fontSizeSelect.value);
+});
+
+      const imageInput=document.getElementById('imageInput');
+      const imagePreview=document.getElementById('imagePreview');
+      const thumbnailInput=document.getElementById('thumbnailInput');
+      const thumbnailPreview=document.getElementById('thumbnailPreview');
+
+      // populate existing thumbnail
+      if(page.thumbnail){ const img=document.createElement('img'); img.src=page.thumbnail; img.style.maxWidth='300px'; thumbnailPreview.appendChild(img); window.currentThumbnail = page.thumbnail; }
+
+      // populate existing images
+      if(page.images && page.images.length>0){ page.images.forEach(src=>{ const wrapper=document.createElement('div'); wrapper.className='img-wrap'; wrapper.style.position='relative'; wrapper.style.display='inline-block'; const img=document.createElement('img'); img.src=src; img.style.maxWidth='120px'; const removeBtn=document.createElement('button'); removeBtn.textContent='×'; removeBtn.style.position='absolute'; removeBtn.style.top='2px'; removeBtn.style.right='2px'; removeBtn.style.background='red'; removeBtn.style.color='white'; removeBtn.style.border='none'; removeBtn.style.borderRadius='50%'; removeBtn.style.width='20px'; removeBtn.style.height='20px'; removeBtn.style.cursor='pointer'; removeBtn.addEventListener('click',()=>wrapper.remove()); wrapper.appendChild(img); wrapper.appendChild(removeBtn); imagePreview.appendChild(wrapper); img.addEventListener('dragstart',dragStart); img.addEventListener('dragend',dragEnd); }) }
+
+      // thumbnail change
+      thumbnailInput.addEventListener('change', e=>{ const file=e.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=ev=>{ thumbnailPreview.innerHTML=''; const img=document.createElement('img'); img.src=ev.target.result; img.style.maxWidth='300px'; thumbnailPreview.appendChild(img); window.currentThumbnail = ev.target.result; }; reader.readAsDataURL(file); });
+
+      // image add
+      imageInput.addEventListener('change',e=>{ const files=Array.from(e.target.files); files.forEach(file=>{ const reader=new FileReader(); reader.onload=function(evt){ const wrapper=document.createElement('div'); wrapper.className='img-wrap'; wrapper.style.position='relative'; wrapper.style.display='inline-block'; const img=document.createElement('img'); img.src=evt.target.result; img.style.maxWidth='120px'; const removeBtn=document.createElement('button'); removeBtn.textContent='×'; removeBtn.style.position='absolute'; removeBtn.style.top='2px'; removeBtn.style.right='2px'; removeBtn.style.background='red'; removeBtn.style.color='white'; removeBtn.style.border='none'; removeBtn.style.borderRadius='50%'; removeBtn.style.width='20px'; removeBtn.style.height='20px'; removeBtn.style.cursor='pointer'; removeBtn.addEventListener('click',()=>wrapper.remove()); wrapper.appendChild(img); wrapper.appendChild(removeBtn); imagePreview.appendChild(wrapper); img.addEventListener('dragstart',dragStart); img.addEventListener('dragend',dragEnd); }; reader.readAsDataURL(file); }); e.target.value=''; });
+
+      let dragElem=null; function dragStart(e){dragElem=e.target; e.dataTransfer.setData('text/plain','')} function dragEnd(){dragElem=null}
+      imagePreview.addEventListener('dragover',e=>e.preventDefault());
+      imagePreview.addEventListener('drop',e=>{e.preventDefault(); if(dragElem){const target=document.elementFromPoint(e.clientX,e.clientY); if(target && target.parentNode===imagePreview) imagePreview.insertBefore(dragElem,target.nextSibling); else imagePreview.appendChild(dragElem)}});
+    }
+
+    function updatePage(oldTitle){
+      const newTitle=document.getElementById('editTitle')?.value.trim();
+      const author=document.getElementById('editAuthor')?.value.trim()||'不明';
+      const genre=document.getElementById('genreSelect')?.value||'';
+      const tags=document.getElementById('tagInput')?.value||'';
+      const body=document.getElementById('editBody')?.innerHTML||'';
+      const imagePreview=document.getElementById('imagePreview');
+      const images=[]; if(imagePreview){Array.from(imagePreview.querySelectorAll('img')).forEach(i=>images.push(i.src));}
+      // determine thumbnail
+      const thumbnail = window.currentThumbnail || pages[oldTitle]?.thumbnail || '';
+
+      if(!newTitle){alert('タイトルを入力してください'); return}
+      // if title changed, remove old key
+      if(newTitle !== oldTitle){ delete pages[oldTitle]; }
+      pages[newTitle] = { body: body, images: images, tags: tags, genre: genre, author: author, created: pages[oldTitle]?.created || new Date().toLocaleString(), thumbnail: thumbnail };
+      // clear temp thumbnail
+      window.currentThumbnail = null;
+      savePages(); viewPage(newTitle);
+    }
+
+    function deletePage(title){ if(!pages[title]) return alert('削除対象が見つかりません'); if(!confirm(`「${title}」 を削除しますか？`)) return; delete pages[title]; savePages(); alert(`「${title}」 を削除しました。`); showHome() }
+
+    function showDeletePageMenu(){const content=document.getElementById('content'); let html=`<div class='page'><h2>🗑️ ページ削除</h2><input id='deleteSearch' placeholder='削除するページを検索...' oninput='filterDeleteList()'><select id='deleteSelect' style='width:100%;padding:8px;margin-top:8px;'>`; for(let title in pages) html+=`<option value='${escapeAttr(title)}'>${escapeHtml(title)} (${escapeHtml(pages[title].genre||'未分類')})</option>`; html+=`</select><br><br><button class='btn' onclick='confirmDelete()'>削除</button> <button class='btn' onclick='showHome()'>キャンセル</button></div>`; content.innerHTML=html }
+
+    function filterDeleteList(){const search=document.getElementById('deleteSearch')?.value.toLowerCase()||''; const select=document.getElementById('deleteSelect'); if(!select) return; select.innerHTML=''; for(let title in pages){ if(title.toLowerCase().includes(search)||(pages[title].tags||'').toLowerCase().includes(search)){ const opt=document.createElement('option'); opt.value=title; opt.textContent=`${title} (${pages[title].genre||'未分類'})`; select.appendChild(opt) } } }
+
+    function confirmDelete(){const select=document.getElementById('deleteSelect'); const title=select?.value; if(title && confirm(`${title} を削除しますか？`)){ delete pages[title]; savePages(); alert(`${title} を削除しました。`); showHome() } }
+
+    function searchPages(){const q=document.getElementById('searchInput')?.value.trim().toLowerCase()||''; const content=document.getElementById('content'); if(!q){showHome(); return} const results=Object.keys(pages).filter(title=>{ const p=pages[title]; return title.toLowerCase().includes(q)||(p.tags||'').toLowerCase().includes(q)||(p.genre||'').toLowerCase().includes(q)}); let html=`<div class='page'><h2>🔍 検索結果: "${escapeHtml(q)}"</h2>`; if(results.length===0) html+=`<p class='small'>該当するページは見つかりませんでした。</p>`; else html+='<ul>'+results.map(t=>`<li><span class='link' onclick="viewPage('${escapeQuotes(t)}')">${escapeHtml(t)}</span> <span class="small">(${escapeHtml(pages[t].genre||'未分類')})</span></li>`).join('')+'</ul>'; html+=`<br><button class='btn' onclick='showHome()'>🏠 ホームへ戻る</button></div>`; content.innerHTML=html }
+
+    function downloadPage(title){const page=pages[title]; if(!page) return; const text=`【タイトル】${title}\n【ジャンル】${page.genre}\n【作成日時】${page.created}\n【タグ】${page.tags||'なし'}\n────────────────────\n【本文】\n${page.body}`; const blob=new Blob([text],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${title}_${new Date().toISOString().split('T')[0]}.txt`; a.click(); showSaveNotice() }
+
+    function escapeHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+    function escapeAttr(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+    function escapeQuotes(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+
+    function backupData(){const blob=new Blob([JSON.stringify(pages,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`Knowrium_Backup_${new Date().toISOString().split('T')[0]}.json`; a.click(); showSaveNotice() }
+
+    function restoreData(){const input=document.createElement('input'); input.type='file'; input.accept='application/json'; input.onchange=e=>{ const file=e.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=event=>{ try{ const restored=JSON.parse(event.target.result); if(confirm('現在のデータに上書きしますか？')){ pages=restored; savePages(); alert('バックアップデータを復元しました。'); showHome() } }catch(err){console.error(err); alert('バックアップファイルが正しくありません。') } }; reader.readAsText(file) }; input.click() }
+
+    // initial render
+    showHome();
+  </script>
+</body>
+</html>
