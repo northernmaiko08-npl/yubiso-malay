@@ -5,42 +5,207 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Knowrium</title>
 <style>
-header nav{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:6px}
-header nav input#searchInput{order:0;margin-left:8px;width:260px}
-body{font-family:'Segoe UI',sans-serif;margin:20px;background:#f5f5f5;color:#333}
-header{text-align:left;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
-header h1{font-size:2.0em;font-weight:700;font-family:'Poppins','Segoe UI',sans-serif;color:#1a1a1a;margin:0;flex:0 0 auto}
-nav{margin-top:10px}
-input,textarea,button,select{font-family:inherit}
-textarea{width:100%;height:200px;border-radius:8px;border:1px solid #ccc;padding:6px;background:#fafafa}
-.page{background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.08);margin-top:15px;transition:all .2s ease-in-out}
+/* ===== Knowrium Responsive Layout ===== */
+*,*::before,*::after{box-sizing:border-box}
+html{width:100%;min-width:0}
+body{
+  font-family:'Segoe UI',sans-serif;
+  margin:0;
+  padding:clamp(10px,2.5vw,20px);
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  overflow-x:hidden;
+  background:#f5f5f5;
+  color:#333;
+}
+header{
+  width:100%;
+  max-width:1400px;
+  margin:0 auto clamp(12px,2vw,20px);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:clamp(10px,2vw,24px);
+}
+header h1{
+  font-size:clamp(1.45rem,3vw,2rem);
+  line-height:1.2;
+  font-weight:700;
+  font-family:'Poppins','Segoe UI',sans-serif;
+  color:#1a1a1a;
+  margin:0;
+  flex:0 0 auto;
+}
+header nav{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+  gap:6px;
+  min-width:0;
+  flex:1 1 auto;
+}
+header nav input#searchInput{
+  order:0;
+  margin-left:8px;
+  width:min(260px,100%);
+  max-width:100%;
+}
+nav{margin-top:0}
+main#content{
+  width:100%;
+  max-width:1400px;
+  margin:0 auto;
+  min-width:0;
+}
+input,textarea,button,select{font-family:inherit;max-width:100%}
+input,select,textarea{font-size:16px}
+textarea{
+  width:100%;
+  height:clamp(160px,30vw,200px);
+  border-radius:8px;
+  border:1px solid #ccc;
+  padding:8px;
+  background:#fafafa;
+  resize:vertical;
+}
+.page{
+  width:100%;
+  min-width:0;
+  background:#fff;
+  padding:clamp(14px,3vw,20px);
+  border-radius:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.08);
+  margin-top:clamp(10px,2vw,15px);
+  transition:all .2s ease-in-out;
+  overflow-wrap:anywhere;
+}
 .page:hover{box-shadow:0 6px 16px rgba(0,0,0,.12)}
-.btn{background:#6c6c6c;color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;margin-right:5px;transition:background .2s}
+.page h2{font-size:clamp(1.25rem,3.5vw,1.6rem);line-height:1.35}
+.page>label{display:flex;justify-content:flex-end;margin-bottom:12px}
+.page label[for="imageInput"]{display:block;text-align:left;margin-bottom:4px;font-weight:700}
+.btn{
+  background:#6c6c6c;color:#fff;border:none;
+  padding:8px 14px;border-radius:8px;cursor:pointer;
+  margin-right:5px;transition:background .2s;
+  min-height:40px;
+  max-width:100%;
+  touch-action:manipulation;
+}
 .btn:hover{background:#505050}
 .link{color:#0b63b5;cursor:pointer;text-decoration:underline}
 #saveNotice{color:green;font-weight:700;margin-top:10px;display:none}
-#deleteSelect,#deleteSearch{width:100%;padding:8px;margin-top:10px;border-radius:6px;border:1px solid #ccc;background:#fafafa}
-.genre-btn{margin:6px;background:#e0e0e0;border:none;padding:10px 16px;border-radius:10px;cursor:pointer}
+#deleteSelect,#deleteSearch{
+  width:100%;padding:8px;margin-top:10px;border-radius:6px;
+  border:1px solid #ccc;background:#fafafa;
+}
+.genre-btn{
+  margin:4px;padding:10px 14px;border-radius:10px;
+  border:0;background:#e0e0e0;cursor:pointer;
+  min-height:42px;touch-action:manipulation;
+}
 .genre-btn:hover{background:#cfcfcf}
 .small{color:#666;font-size:.9rem}
-input[type="text"],select{border:1px solid #ccc;border-radius:6px;padding:6px;background:#fafafa}
-.home-page-list{display:flex;flex-direction:column;gap:12px}
-.home-page-item{background:#fff;border-radius:12px;padding:12px 16px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+input[type="text"],input[type="color"],select{
+  border:1px solid #ccc;border-radius:6px;padding:8px;background:#fafafa;
+}
+input[type="text"]{width:100%}
+.home-page-list{
+  display:flex;flex-direction:column;gap:12px;
+  list-style:none;padding:0;margin:12px 0 0;
+}
+.home-page-item{
+  background:#fff;border-radius:12px;padding:12px 16px;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+  min-width:0;overflow-wrap:anywhere;
+}
 .home-page-item:hover{box-shadow:0 4px 12px rgba(0,0,0,.12)}
 .home-page-item .link{font-weight:600;color:#0b63b5;text-decoration:underline}
-.home-page-item .small{color:#666;font-size:.9rem;display:block;margin-top:4px}
-.page>label{display:flex;justify-content:flex-end;margin-bottom:12px}
-.page label[for="imageInput"]{display:block;text-align:left;margin-bottom:4px;font-weight:700}
-#imagePreview{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-start}
-#imagePreview .img-wrap{position:relative;display:inline-block}
-#imagePreview img{max-width:120px;display:block;border-radius:6px}
-.image-section img.article-image{max-width:100%;border-radius:8px;margin-top:10px}
-/* 新しく追加：JPEG / WEBP 表示スペースのスタイル */
-.image-collections{display:flex;flex-direction:column;gap:12px;margin-top:12px}
-.image-collections .section{background:#fafafa;padding:12px;border-radius:8px;border:1px solid #e6e6e6}
+.home-page-item .small{
+  color:#666;font-size:.9rem;display:block;margin-top:4px;
+  overflow-wrap:anywhere;
+}
+#imagePreview{
+  display:flex;flex-wrap:wrap;gap:10px;
+  width:100%;min-width:0;
+}
+#imagePreview .img-wrap{position:relative;display:inline-block;max-width:100%}
+#imagePreview img{
+  width:auto;max-width:min(120px,100%);height:auto;
+  display:block;border-radius:6px;
+}
+#thumbnailPreview img{
+  display:block;width:auto;max-width:100%;height:auto;border-radius:8px;
+}
+.image-section img.article-image{
+  display:block;width:auto;max-width:100%;height:auto;
+  border-radius:8px;margin-top:10px;
+}
+.image-collections{
+  display:flex;flex-direction:column;gap:12px;margin-top:12px;
+  width:100%;min-width:0;
+}
+.image-collections .section{
+  background:#fafafa;padding:12px;border-radius:8px;
+  border:1px solid #e6e6e6;min-width:0;
+}
 .image-collections .section h3{margin:0 0 8px 0;font-size:1rem}
-.image-collections .thumbs{display:flex;flex-wrap:wrap;gap:10px}
-.image-collections .thumbs img{max-width:140px;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.image-collections .thumbs{
+  display:flex;flex-wrap:wrap;gap:10px;min-width:0;
+}
+.image-collections .thumbs img{
+  width:auto;max-width:min(140px,100%);height:auto;
+  border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.06);
+}
+#bodyInput,#editBody{
+  width:100%;min-height:clamp(180px,35vw,320px);max-width:100%;
+  border:1px solid #ccc;border-radius:8px;padding:8px;
+  background:#fafafa;overflow:auto;overflow-wrap:anywhere;
+  word-break:break-word;-webkit-overflow-scrolling:touch;
+}
+#bodyInput img,#editBody img{max-width:100%;height:auto}
+hr{max-width:100%}
+
+@media (max-width:900px){
+  header{align-items:flex-start;flex-direction:column}
+  header nav{width:100%;justify-content:flex-start}
+  header nav input#searchInput{flex:1 1 220px;margin-left:0}
+}
+@media (max-width:600px){
+  body{padding:10px}
+  header{gap:10px}
+  header h1{font-size:1.5rem}
+  header nav{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    width:100%;gap:6px;
+  }
+  header nav .btn{
+    width:100%;margin:0;padding:8px 6px;font-size:.88rem;
+  }
+  header nav input#searchInput{
+    grid-column:1 / -1;width:100%;margin:0;
+  }
+  .page{padding:14px;margin-top:10px}
+  .page>label{justify-content:flex-start;align-items:center}
+  .page>label select{width:100%}
+  .genre-btn{margin:3px 2px;padding:9px 10px;font-size:.9rem}
+  .home-page-item{padding:11px 12px}
+  .btn{padding:9px 12px;margin-bottom:5px}
+  #bodyInput,#editBody{min-height:220px}
+}
+@media (max-width:380px){
+  body{padding:8px}
+  header nav .btn{font-size:.8rem}
+  .page{padding:12px}
+  .genre-btn{font-size:.82rem;padding:8px 8px}
+}
+@media (min-width:1200px){
+  #content .page{max-width:1200px;margin-left:auto;margin-right:auto}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important}
+}
 </style>
 
   <!-- PWA Essential Settings (Auto-generated) -->
@@ -80,14 +245,63 @@ input[type="text"],select{border:1px solid #ccc;border-radius:6px;padding:6px;ba
   <p id="saveNotice">✅ 保存完了</p>
 
   <script>
-    // load pages from IndexedDB
-    let pages = JSON.parse(indexedDB.getItem('knowriumPages') || '{}');
+    // Load pages from IndexedDB.
+    // The app uses a single object store named "pages" with one record ("all")
+    // so the rest of Knowrium can continue working with the existing `pages` object.
+    const DB_NAME = 'KnowriumDB';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'pages';
+    const STORE_KEY = 'all';
+
+    let pages = {};
+    let dbReady = null;
+
+    function openKnowriumDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+        request.onupgradeneeded = event => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME);
+          }
+        };
+
+        request.onsuccess = event => resolve(event.target.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function savePages() {
+      dbReady.transaction(STORE_NAME, 'readwrite')
+        .objectStore(STORE_NAME)
+        .put(pages, STORE_KEY);
+
+      showSaveNotice();
+    }
+
+    async function initializeKnowriumStorage() {
+      try {
+        dbReady = await openKnowriumDB();
+        pages = await new Promise((resolve, reject) => {
+          const tx = dbReady.transaction(STORE_NAME, 'readonly');
+          const request = tx.objectStore(STORE_NAME).get(STORE_KEY);
+          request.onsuccess = () => resolve(request.result || {});
+          request.onerror = () => reject(request.error);
+        });
+
+        showHome();
+      } catch (error) {
+        console.error('IndexedDB initialization failed:', error);
+        alert('データベースの初期化に失敗しました。ブラウザのサイトデータ設定をご確認ください。');
+      }
+    }
 
     const genres = ['🧐学問・勉強','🏡暮らし・生活','✈️世界・旅行','❤️恋愛','🖥️ビジネス','💃娯楽','🏈スポーツ','🌱豆知識'];
     genres.push('サイト概要');
 
     function showSaveNotice(){const n=document.getElementById('saveNotice'); n.style.display='block'; setTimeout(()=>n.style.display='none',2000)}
-    function savePages(){indexedDB.setItem('knowriumPages',JSON.stringify(pages)); showSaveNotice()}
+
 
     function showHome(){
       const content=document.getElementById('content');
@@ -181,7 +395,7 @@ input[type="text"],select{border:1px solid #ccc;border-radius:6px;padding:6px;ba
 const fontSizeSelect = document.getElementById('fontSizeSelect');
 fontSizeSelect.addEventListener('change', () => {
   document.execCommand('fontSize', false, "7"); // 一旦最大サイズで挿入
-  const spans = document.querySelectorAll('#bodyInput span[style*="font-size"]');
+  const spans = document.querySelectorAll('#bodyInput span[style*="font-size"], #editBody span[style*="font-size"]');
   spans.forEach(span => span.style.fontSize = fontSizeSelect.value);
 });
 
@@ -303,7 +517,7 @@ fontSizeSelect.addEventListener('change', () => {
 const fontSizeSelect = document.getElementById('fontSizeSelect');
 fontSizeSelect.addEventListener('change', () => {
   document.execCommand('fontSize', false, "7"); // 一旦最大サイズで挿入
-  const spans = document.querySelectorAll('#bodyInput span[style*="font-size"]');
+  const spans = document.querySelectorAll('#bodyInput span[style*="font-size"], #editBody span[style*="font-size"]');
   spans.forEach(span => span.style.fontSize = fontSizeSelect.value);
 });
 
@@ -369,8 +583,8 @@ fontSizeSelect.addEventListener('change', () => {
 
     function restoreData(){const input=document.createElement('input'); input.type='file'; input.accept='application/json'; input.onchange=e=>{ const file=e.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=event=>{ try{ const restored=JSON.parse(event.target.result); if(confirm('現在のデータに上書きしますか？')){ pages=restored; savePages(); alert('バックアップデータを復元しました。'); showHome() } }catch(err){console.error(err); alert('バックアップファイルが正しくありません。') } }; reader.readAsText(file) }; input.click() }
 
-    // initial render
-    showHome();
+    // initial render after IndexedDB has been opened and loaded
+    initializeKnowriumStorage();
   </script>
 </body>
 </html>
