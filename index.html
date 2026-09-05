@@ -80,14 +80,14 @@ input[type="text"],select{border:1px solid #ccc;border-radius:6px;padding:6px;ba
   <p id="saveNotice">✅ 保存完了</p>
 
   <script>
-    // load pages from localStorage
-    let pages = JSON.parse(localStorage.getItem('knowriumPages') || '{}');
+    // load pages from IndexedDB
+    let pages = JSON.parse(indexedDB.getItem('knowriumPages') || '{}');
 
     const genres = ['🧐学問・勉強','🏡暮らし・生活','✈️世界・旅行','❤️恋愛','🖥️ビジネス','💃娯楽','🏈スポーツ','🌱豆知識'];
     genres.push('サイト概要');
 
     function showSaveNotice(){const n=document.getElementById('saveNotice'); n.style.display='block'; setTimeout(()=>n.style.display='none',2000)}
-    function savePages(){localStorage.setItem('knowriumPages',JSON.stringify(pages)); showSaveNotice()}
+    function savePages(){indexedDB.setItem('knowriumPages',JSON.stringify(pages)); showSaveNotice()}
 
     function showHome(){
       const content=document.getElementById('content');
